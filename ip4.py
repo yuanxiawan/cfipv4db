@@ -39,21 +39,21 @@ def process_csv_to_txt(input_filename, txt_filename):
         with open(input_filename, mode='r', newline='', encoding='utf-8') as infile:
             reader = csv.reader(infile)
             with open(txt_filename, mode='w', encoding='utf-8') as outfile:
-                for row in reader:
+                for index, row in enumerate(reader, start=1):  # 从1开始计数
                     if row:
                         second_column = row[1]  # 第二列
-                        sixth_column = row[5]   # 第六列
-                        # seventh_column = row[6]  # 第七列
-                        outfile.write(f"{second_column}#{sixth_column}\n")
-
+                        sixth_column = row[5]    # 第六列
+                        # 将顺序数字加在 sixth_column 后面
+                        outfile.write(f"{second_column}:2082#{sixth_column}{index}\n")
+                        
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
         print(f"文件操作错误: {e}")
 
 # 定义URL和文件名
 URL = "https://www.182682.xyz/page/cloudflare/ipv4.html"
-CSV_FILENAME = '4.csv'
-TXT_FILENAME = 'ip4.txt'
+CSV_FILENAME = 'cfip.csv'
+TXT_FILENAME = 'cfip4.txt'
 
 # 执行数据抓取和处理
 print("开始执行...")
