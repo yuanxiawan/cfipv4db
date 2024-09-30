@@ -37,7 +37,7 @@ jobs:
 
     - name: Commit and push generated files
       run: |
-        git add 4.csv ip4.txt
+        git add cfip.csv cfip4.txt
         git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
         git push
       env:
