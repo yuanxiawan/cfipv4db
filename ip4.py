@@ -44,7 +44,7 @@ def process_csv_to_txt(input_filename, txt_filename):
                         second_column = row[1]  # 第二列
                         sixth_column = row[5]    # 第六列
                         # 将顺序数字加在 sixth_column 后面
-                        outfile.write(f"{second_column}:2082#{sixth_column}{index}\n")
+                        outfile.write(f"{second_column}#{sixth_column}{index}\n")
                         
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
