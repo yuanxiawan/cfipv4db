@@ -1,0 +1,43 @@
+name: ip4cf
+
+on:
+  push:
+    branches:
+      - main  # 如果你的默认分支是main，保持不变；否则替换为你的默认分支
+  schedule:
+    - cron: "*/30 * * * *"  # 计划任务，设定为每30分钟运行一次
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Run Python script
+      run: |
+        python ip4.py  # 替换为你的 Python 脚本文件名
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "yuanxiawan"
+        git config --global user.email "yuanxiawan@gmail.com"
+
+    - name: Commit and push generated files
+      run: |
+        git add 4.csv ip4.txt
+        git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
