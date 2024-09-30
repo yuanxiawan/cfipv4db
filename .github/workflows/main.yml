@@ -6,7 +6,8 @@ on:
       - main  # 如果你的默认分支是main，保持不变；否则替换为你的默认分支
   schedule:
     - cron: "*/30 * * * *"  # 计划任务，设定为每30分钟运行一次
-
+permissions:
+  contents: write  # 允许写入内容
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
