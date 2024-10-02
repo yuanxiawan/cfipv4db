@@ -1,31 +1,64 @@
 import csv
 import requests
 from bs4 import BeautifulSoup
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import time
 
 def is_dynamic_page(url):
-    """
-    判断网页是否动态加载内容，通过查看页面中是否包含明显的动态加载提示。
-    """
+    """判断网页是否需要用Selenium抓取（通过检查网页中的AJAX请求）"""
     try:
         response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            # 使用 string 来避免警告
-            if soup.find("script", string=lambda t: t and "ajax" in t.lower()) or \
-               soup.find("div", class_="loading") or \
-               soup.find("div", id="loading"):
-                return True
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # 根据是否存在动态请求，判断是否需要使用 Selenium
+        return bool(soup.find("script", text=lambda t: t and "ajax" in t.lower()))
+    except requests.RequestException as e:
+        print(f"请求错误: {e}")
         return False
-    except Exception as e:
-        print(f"无法请求页面: {e}")
-        return True  # 如果无法请求页面，默认假设是动态页面
 
-def fetch_and_write_csv_with_selenium(url, filename):
+def fetch_and_write_csv_with_requests(url, filename, is_first_run):
+    """使用 requests 抓取静态网页数据并追加到 CSV 文件"""
+    try:
+        print(f"正在使用 requests 抓取：{url}")
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table')
+
+        if table is None:
+            print("未找到数据表！")
+            return
+
+        # 打开 CSV 文件并追加内容
+        with open(filename, 'a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+
+            # 获取表格头部，只在文件的第一次写入时添加头部
+            if is_first_run and file.tell() == 0:
+                headers = [col.text.strip() for col in table.find_all('th')]
+                writer.writerow(['Source'] + headers)  # 添加数据来源列
+
+            # 获取表格数据
+            rows = table.find_all('tr')
+            for row in rows:
+                cols = row.find_all('td')
+                row_data = [col.text.strip() for col in cols]
+                if row_data:  # 过滤空行
+                    writer.writerow([url] + row_data)
+
+        print(f"CSV文件已成功保存为：{filename}")
+
+    except requests.RequestException as e:
+        print(f"请求错误: {e}")
+    except IOError as e:
+        print(f"文件操作错误: {e}")
+
+def fetch_and_write_csv_with_selenium(url, filename, is_first_run):
     """使用 Selenium 从动态加载的网页抓取数据并追加到 CSV 文件"""
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # 无头模式
@@ -51,9 +84,9 @@ def fetch_and_write_csv_with_selenium(url, filename):
         with open(filename, 'a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
 
-            # 获取表格头部
-            headers = [header.text.strip() for header in table.find_elements(By.TAG_NAME, 'th')]
-            if file.tell() == 0:  # 如果文件为空，写入头部
+            # 获取表格头部，只在文件的第一次写入时添加头部
+            if is_first_run and file.tell() == 0:
+                headers = [header.text.strip() for header in table.find_elements(By.TAG_NAME, 'th')]
                 writer.writerow(['Source'] + headers)  # 添加数据来源列
 
             # 获取表格数据
@@ -72,48 +105,6 @@ def fetch_and_write_csv_with_selenium(url, filename):
     finally:
         driver.quit()
 
-
-def fetch_and_write_csv_with_requests(url, filename):
-    """使用 requests 抓取静态网页数据并追加到 CSV 文件"""
-    try:
-        print(f"正在使用 requests 抓取：{url}")
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table')
-
-        if table is None:
-            print("未找到数据表！")
-            return
-
-        # 打开 CSV 文件并追加内容
-        with open(filename, 'a', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-
-            # 获取表格头部
-            headers = [col.text.strip() for col in table.find_all('th')]
-            if file.tell() == 0:  # 如果文件为空，写入头部
-                writer.writerow(['Source'] + headers)  # 添加数据来源列
-
-            # 获取表格数据
-            rows = table.find_all('tr')
-            for row in rows:
-                cols = row.find_all('td')
-                row_data = [col.text.strip() for col in cols]
-                if row_data:  # 过滤空行
-                    writer.writerow([url] + row_data)
-
-        print(f"CSV文件已成功保存为：{filename}")
-
-    except requests.RequestException as e:
-        print(f"请求错误: {e}")
-    except IOError as e:
-        print(f"文件操作错误: {e}")
-
-
 def process_csv_to_txt(input_filename, txt_filename):
     """处理CSV文件，提取特定列并写入TXT文件"""
     try:
@@ -124,34 +115,37 @@ def process_csv_to_txt(input_filename, txt_filename):
                     if row:
                         second_column = row[1]  # 第二列
                         sixth_column = row[5]    # 第六列
-                        # 输出第二列和第六列，加入顺序号
+                        # 将顺序数字加在 sixth_column 后面
                         outfile.write(f"{second_column}#{sixth_column}{index}\n")
                         
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
         print(f"文件操作错误: {e}")
 
-
 # 定义URL和文件名
 URLS = [
     "https://www.wetest.vip/page/cloudflare/address_v4.html",
-    "https://stock.hostmonit.com/CloudFlareYes",
-    # 你可以添加更多的网址
+    "https://stock.hostmonit.com/CloudFlareYes",  # 可根据需要调整
 ]
+
 CSV_FILENAME = 'cfip.csv'
 TXT_FILENAME = 'cfip4.txt'
 
 # 执行数据抓取和处理
 print("开始执行...")
+is_first_run = True
 
+# 遍历 URL 列表
 for url in URLS:
     if is_dynamic_page(url):
         print(f"{url} 需要使用 Selenium 抓取数据")
-        fetch_and_write_csv_with_selenium(url, CSV_FILENAME)
+        fetch_and_write_csv_with_selenium(url, CSV_FILENAME, is_first_run)
     else:
         print(f"{url} 使用 requests 抓取数据")
-        fetch_and_write_csv_with_requests(url, CSV_FILENAME)
+        fetch_and_write_csv_with_requests(url, CSV_FILENAME, is_first_run)
+    is_first_run = False  # 只在第一次运行时写入头部
 
+# 处理 CSV 文件并生成 TXT 文件
 process_csv_to_txt(CSV_FILENAME, TXT_FILENAME)
 
 print("任务已完成。")
