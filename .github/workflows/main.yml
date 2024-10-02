@@ -3,11 +3,13 @@ name: ip4cf
 on:
   push:
     branches:
-      - main  # 如果你的默认分支是main，保持不变；否则替换为你的默认分支
+      - main
   schedule:
-    - cron: "*/30 * * * *"  # 计划任务，设定为每30分钟运行一次
+    - cron: "*/30 * * * *"
+
 permissions:
-  contents: write  # 允许写入内容
+  contents: write
+
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
@@ -23,12 +25,14 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-chromedriver
         python -m pip install --upgrade pip
-        pip install requests beautifulsoup4
+        pip install requests beautifulsoup4 selenium
 
     - name: Run Python script
       run: |
-        python ip4.py  # 替换为你的 Python 脚本文件名
+        python ip4.py
 
     - name: Configure Git
       run: |
