@@ -15,8 +15,8 @@ def is_dynamic_page(url):
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
-            # 尝试查找是否有包含某些AJAX或者动态加载的特征
-            if soup.find("script", text=lambda t: t and "ajax" in t.lower()) or \
+            # 使用 string 来避免警告
+            if soup.find("script", string=lambda t: t and "ajax" in t.lower()) or \
                soup.find("div", class_="loading") or \
                soup.find("div", id="loading"):
                 return True
@@ -25,9 +25,8 @@ def is_dynamic_page(url):
         print(f"无法请求页面: {e}")
         return True  # 如果无法请求页面，默认假设是动态页面
 
-
 def fetch_and_write_csv_with_selenium(url, filename):
-    """使用 Selenium 从动态加载的网页抓取数据并写入 CSV 文件"""
+    """使用 Selenium 从动态加载的网页抓取数据并追加到 CSV 文件"""
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # 无头模式
     chrome_options.add_argument("--no-sandbox")  # 禁用沙盒
@@ -48,20 +47,22 @@ def fetch_and_write_csv_with_selenium(url, filename):
             print("未找到数据表！")
             return
 
-        # 打开 CSV 文件
-        with open(filename, 'w', newline='', encoding='utf-8') as file:
+        # 打开 CSV 文件并追加内容
+        with open(filename, 'a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
 
             # 获取表格头部
             headers = [header.text.strip() for header in table.find_elements(By.TAG_NAME, 'th')]
-            writer.writerow(headers)
+            if file.tell() == 0:  # 如果文件为空，写入头部
+                writer.writerow(['Source'] + headers)  # 添加数据来源列
 
             # 获取表格数据
             rows = table.find_elements(By.TAG_NAME, 'tr')
             for row in rows:
                 cols = row.find_elements(By.TAG_NAME, 'td')
                 row_data = [col.text.strip() for col in cols]
-                writer.writerow(row_data)
+                if row_data:  # 过滤空行
+                    writer.writerow([url] + row_data)
 
         print(f"CSV文件已成功保存为：{filename}")
 
@@ -73,10 +74,13 @@ def fetch_and_write_csv_with_selenium(url, filename):
 
 
 def fetch_and_write_csv_with_requests(url, filename):
-    """使用 requests 抓取静态网页数据并写入 CSV 文件"""
+    """使用 requests 抓取静态网页数据并追加到 CSV 文件"""
     try:
         print(f"正在使用 requests 抓取：{url}")
-        response = requests.get(url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         table = soup.find('table')
@@ -85,17 +89,22 @@ def fetch_and_write_csv_with_requests(url, filename):
             print("未找到数据表！")
             return
 
-        with open(filename, 'w', newline='', encoding='utf-8') as file:
+        # 打开 CSV 文件并追加内容
+        with open(filename, 'a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            headers = []
-            for row in table.find_all('tr'):
+
+            # 获取表格头部
+            headers = [col.text.strip() for col in table.find_all('th')]
+            if file.tell() == 0:  # 如果文件为空，写入头部
+                writer.writerow(['Source'] + headers)  # 添加数据来源列
+
+            # 获取表格数据
+            rows = table.find_all('tr')
+            for row in rows:
                 cols = row.find_all('td')
-                if not headers:
-                    headers = [col.text.strip() for col in cols]
-                    writer.writerow(headers)
-                else:
-                    row_data = [col.text.strip() for col in cols]
-                    writer.writerow(row_data)
+                row_data = [col.text.strip() for col in cols]
+                if row_data:  # 过滤空行
+                    writer.writerow([url] + row_data)
 
         print(f"CSV文件已成功保存为：{filename}")
 
