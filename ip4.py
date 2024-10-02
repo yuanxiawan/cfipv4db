@@ -51,7 +51,11 @@ def process_csv_to_txt(input_filename, txt_filename):
         print(f"文件操作错误: {e}")
 
 # 定义URL和文件名
-URL = "https://www.182682.xyz/page/cloudflare/address_v4.html"
+URLS = [
+    "https://www.wetest.vip/page/cloudflare/address_v4.html",
+    "https://stock.hostmonit.com/CloudFlareYes",
+    # 你可以添加更多的网址
+]
 CSV_FILENAME = 'cfip.csv'
 TXT_FILENAME = 'cfip4.txt'
 
