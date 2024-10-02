@@ -10,17 +10,16 @@ import time
 def is_dynamic_page(url):
     """
     判断网页是否动态加载内容，通过查看页面中是否包含明显的动态加载提示。
-    这里通过判断是否包含 'script' 标签以及一些常见的动态加载标识（例如 JavaScript、Ajax 等）。
     """
     try:
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
-            scripts = soup.find_all('script')
-            if scripts:
-                # 判断页面中是否包含 JavaScript 标签或常见的动态加载标识
-                if any("ajax" in script.get_text().lower() or "javascript" in script.get_text().lower() for script in scripts):
-                    return True
+            # 尝试查找是否有包含某些AJAX或者动态加载的特征
+            if soup.find("script", text=lambda t: t and "ajax" in t.lower()) or \
+               soup.find("div", class_="loading") or \
+               soup.find("div", id="loading"):
+                return True
         return False
     except Exception as e:
         print(f"无法请求页面: {e}")
@@ -138,8 +137,10 @@ print("开始执行...")
 
 for url in URLS:
     if is_dynamic_page(url):
+        print(f"{url} 需要使用 Selenium 抓取数据")
         fetch_and_write_csv_with_selenium(url, CSV_FILENAME)
     else:
+        print(f"{url} 使用 requests 抓取数据")
         fetch_and_write_csv_with_requests(url, CSV_FILENAME)
 
 process_csv_to_txt(CSV_FILENAME, TXT_FILENAME)
