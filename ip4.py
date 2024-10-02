@@ -125,7 +125,7 @@ def process_csv_to_txt(input_filename, txt_filename):
 # 定义URL和文件名
 URLS = [
     "https://www.wetest.vip/page/cloudflare/address_v4.html",
-    "https://stock.hostmonit.com/CloudFlareYes",  # 可根据需要调整
+   # 可根据需要调整
 ]
 
 CSV_FILENAME = 'cfip.csv'
