@@ -2,11 +2,19 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 
+import csv
+import requests
+from bs4 import BeautifulSoup
+
 def fetch_and_write_csv(url, filename):
     """从给定的URL抓取数据并写入CSV文件"""
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
+    
     try:
         print(f"正在请求：{url}")
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)  # 添加 headers
         response.raise_for_status()  # 确保请求成功
         soup = BeautifulSoup(response.content, 'html.parser')
         table = soup.find('table')
