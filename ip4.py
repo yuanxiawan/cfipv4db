@@ -61,6 +61,10 @@ TXT_FILENAME = 'cfip4.txt'
 
 # 执行数据抓取和处理
 print("开始执行...")
-fetch_and_write_csv(URL, CSV_FILENAME)
+
+for url in URLS:  # 遍历URLS列表，处理每个URL
+    fetch_and_write_csv(url, CSV_FILENAME)
+
 process_csv_to_txt(CSV_FILENAME, TXT_FILENAME)
+
 print("任务已完成。")
