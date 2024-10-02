@@ -7,17 +7,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
-def is_dynamic_page(url):
-    """判断网页是否需要用Selenium抓取（通过检查网页中的AJAX请求）"""
-    try:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        # 根据是否存在动态请求，判断是否需要使用 Selenium
-        return bool(soup.find("script", text=lambda t: t and "ajax" in t.lower()))
-    except requests.RequestException as e:
-        print(f"请求错误: {e}")
-        return False
-
 def fetch_and_write_csv_with_requests(url, filename, is_first_run):
     """使用 requests 抓取静态网页数据并追加到 CSV 文件"""
     try:
@@ -123,10 +112,10 @@ def process_csv_to_txt(input_filename, txt_filename):
         print(f"文件操作错误: {e}")
 
 # 定义URL和文件名
-URLS = [
-    "https://www.wetest.vip/page/cloudflare/address_v4.html",
-   # 可根据需要调整
-]
+URLS = {
+    "https://www.wetest.vip/page/cloudflare/address_v4.html": "requests",
+    "https://stock.hostmonit.com/CloudFlareYes": "selenium",  # 使用Selenium抓取
+}
 
 CSV_FILENAME = 'cfip.csv'
 TXT_FILENAME = 'cfip4.txt'
@@ -136,13 +125,11 @@ print("开始执行...")
 is_first_run = True
 
 # 遍历 URL 列表
-for url in URLS:
-    if is_dynamic_page(url):
-        print(f"{url} 需要使用 Selenium 抓取数据")
-        fetch_and_write_csv_with_selenium(url, CSV_FILENAME, is_first_run)
-    else:
-        print(f"{url} 使用 requests 抓取数据")
+for url, method in URLS.items():
+    if method == "requests":
         fetch_and_write_csv_with_requests(url, CSV_FILENAME, is_first_run)
+    elif method == "selenium":
+        fetch_and_write_csv_with_selenium(url, CSV_FILENAME, is_first_run)
     is_first_run = False  # 只在第一次运行时写入头部
 
 # 处理 CSV 文件并生成 TXT 文件
