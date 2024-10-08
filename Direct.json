@@ -3,14 +3,17 @@
   "rules": [
     {
       "domain": [
-        "weixinsxy.com",
-        "wxapp.tc.qq.com"
+        "id500.com",
+        "ddys.pro",
+        "dnsany.com",
+        "cmvideo.cn"
       ]
     },
     {
       "domain_suffix": [
-        ".weixinsxy.com",
-        ".wxapp.tc.qq.com"
+        ".id500.com",
+        ".dnsany.com",
+        "cmvideo.cn"
       ]
     },
     {
