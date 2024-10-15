@@ -45,7 +45,7 @@ def save_to_csv(data, filename):
 # 主程序
 if __name__ == "__main__":
     # 编码的 URL
-    encoded_url = "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s"
+    encoded_url = "aHR0cHM6Ly9zdG9jay5ob3N0bW9uaXQuY29tL0Nsb3VkRmxhcmVZZXM="
     decoded_url = base64.b64decode(encoded_url).decode('utf-8')
 
     # 异步运行抓取数据
