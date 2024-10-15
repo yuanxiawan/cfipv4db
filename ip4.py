@@ -47,10 +47,12 @@ def process_csv_to_txt(input_filename, txt_filename):
             reader = csv.reader(infile)
             with open(txt_filename, mode='w', encoding='utf-8') as outfile:
                 for index, row in enumerate(reader, start=1):  # 从1开始计数
-                    if row:
+                    if len(row) >= 6:  # 检查该行是否有至少6列
                         second_column = row[1]  # 第二列
                         sixth_column = row[5]    # 第六列
                         outfile.write(f"{second_column}#{sixth_column}{index}\n")
+                    else:
+                        print(f"行 {index} 没有足够的列数据，跳过该行")
                         
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
