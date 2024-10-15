@@ -1,19 +1,12 @@
 import csv
 import requests
 from bs4 import BeautifulSoup
-import base64
 
 def fetch_and_write_csv(url, filename):
     """从给定的URL抓取数据并写入CSV文件"""
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
         print(f"正在请求：{url}")
-        response = requests.get(url, headers=headers)
-        print(f"HTTP Status Code: {response.status_code}")
-        print(f"Response Content Preview: {response.content[:500]}")  # 打印前500个字符
-        
+        response = requests.get(url)
         response.raise_for_status()  # 确保请求成功
         soup = BeautifulSoup(response.content, 'html.parser')
         table = soup.find('table')
@@ -47,25 +40,30 @@ def process_csv_to_txt(input_filename, txt_filename):
             reader = csv.reader(infile)
             with open(txt_filename, mode='w', encoding='utf-8') as outfile:
                 for index, row in enumerate(reader, start=1):  # 从1开始计数
-                    if len(row) >= 6:  # 检查该行是否有至少6列
+                    if row:
                         second_column = row[1]  # 第二列
                         sixth_column = row[5]    # 第六列
+                        # 将顺序数字加在 sixth_column 后面
                         outfile.write(f"{second_column}#{sixth_column}{index}\n")
-                    else:
-                        print(f"行 {index} 没有足够的列数据，跳过该行")
                         
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
         print(f"文件操作错误: {e}")
 
-# 编码的 URL
-encoded_url = "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s"
-
-# 解码 URL
-decoded_url = base64.b64decode(encoded_url).decode('utf-8')
+# 定义URL和文件名
+URLS = [
+    "https://www.wetest.vip/page/cloudflare/address_v4.html"
+    # 你可以添加更多的网址
+]
+CSV_FILENAME = 'cfip.csv'
+TXT_FILENAME = 'cfip4.txt'
 
 # 执行数据抓取和处理
 print("开始执行...")
-fetch_and_write_csv(decoded_url, 'cfip.csv')
-process_csv_to_txt('cfip.csv', 'cfip4.txt')
+
+for url in URLS:  # 遍历URLS列表，处理每个URL
+    fetch_and_write_csv(url, CSV_FILENAME)
+
+process_csv_to_txt(CSV_FILENAME, TXT_FILENAME)
+
 print("任务已完成。")
