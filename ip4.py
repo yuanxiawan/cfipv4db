@@ -4,12 +4,6 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import base64
 
-# 手动选择抓取方式
-USE_PLAYWRIGHT = {
-    "https://www.wetest.vip/page/cloudflare/address_v4.html": True,
-    "https://stock.hostmonit.com/CloudFlareYes": True
-}
-
 def fetch_data_with_requests(url):
     """使用 requests 抓取静态网页"""
     try:
@@ -36,7 +30,7 @@ def fetch_data_with_playwright(url):
         print(f"Playwright 抓取错误: {e}")
         return None
 
-def fetch_and_write_csv(url, filename, use_playwright):
+def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
     """根据选择的方式抓取数据并写入CSV文件"""
     content = None
     if use_playwright:
@@ -50,7 +44,14 @@ def fetch_and_write_csv(url, filename, use_playwright):
 
     try:
         soup = BeautifulSoup(content, 'html.parser')
-        table = soup.find('table')
+        
+        # 使用table_identifier来定位特定的表格
+        target_div = soup.find('div', class_=table_identifier)
+        if target_div is None:
+            print("未找到包含目标表格的DIV！")
+            return
+
+        table = target_div.find('table')  # 在目标div内寻找表格
 
         if table is None:
             print("未找到数据表！")
@@ -92,12 +93,15 @@ def process_csv_to_txt(input_filename, txt_filename):
 
 # 编码的 URL 列表
 encoded_urls = [
-    "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s",
-    "aHR0cHM6Ly9zdG9jay5ob3N0bW9uaXQuY29tL0Nsb3VkRmxhcmVZZXM="
+    "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s"
 ]
 
 # 解码 URL
 decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
+
+# 手动指定每个URL是否使用Playwright和目标表格的div class或id
+use_playwright = [True, True]
+table_identifiers = ['layui-card-body', 'layui-card-body']
 
 # 执行数据抓取和处理
 print("开始执行...")
@@ -105,9 +109,8 @@ print("开始执行...")
 csv_filename = 'cfip.csv'
 txt_filename = 'cfip4.txt'
 
-for url in decoded_urls:
-    use_playwright = USE_PLAYWRIGHT.get(url, False)
-    fetch_and_write_csv(url, csv_filename, use_playwright)
+for url, use_pw, table_identifier in zip(decoded_urls, use_playwright, table_identifiers):
+    fetch_and_write_csv(url, csv_filename, use_pw, table_identifier)
 
 process_csv_to_txt(csv_filename, txt_filename)
 print("任务已完成。")
