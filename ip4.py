@@ -6,8 +6,14 @@ import base64
 def fetch_and_write_csv(url, filename):
     """从给定的URL抓取数据并写入CSV文件"""
     try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
         print(f"正在请求：{url}")
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
+        print(f"HTTP Status Code: {response.status_code}")
+        print(f"Response Content Preview: {response.content[:500]}")  # 打印前500个字符
+        
         response.raise_for_status()  # 确保请求成功
         soup = BeautifulSoup(response.content, 'html.parser')
         table = soup.find('table')
@@ -44,7 +50,6 @@ def process_csv_to_txt(input_filename, txt_filename):
                     if row:
                         second_column = row[1]  # 第二列
                         sixth_column = row[5]    # 第六列
-                        # 将顺序数字加在 sixth_column 后面
                         outfile.write(f"{second_column}#{sixth_column}{index}\n")
                         
         print(f"TXT文件已成功生成为：{txt_filename}")
