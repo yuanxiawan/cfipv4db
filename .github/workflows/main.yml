@@ -22,12 +22,11 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
-
     - name: Install dependencies
       run: |
         sudo apt-get update
         pip install requests beautifulsoup4 selenium
-
+        pip install playwright
     - name: Run Python script
       run: |
         python ip4.py
