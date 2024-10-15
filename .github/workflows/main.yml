@@ -22,14 +22,19 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
+
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        pip install requests beautifulsoup4 selenium
-        pip install playwright
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 playwright
+
+    - name: Install Playwright browsers
+      run: |
+        playwright install
+
     - name: Run Python script
       run: |
-        python ip4.py
+        python ip4.py  # 替换为你的 Python 脚本文件名
 
     - name: Configure Git
       run: |
