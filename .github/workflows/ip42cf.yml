@@ -1,4 +1,4 @@
-name: ip42cf
+name: ip4cf
 
 on:
   push:
@@ -6,40 +6,42 @@ on:
       - main
   schedule:
     - cron: "*/30 * * * *"
+
 permissions:
   contents: write
+
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install playwright pandas
-        playwright install
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright pandas
+          playwright install
+      - name: Run Python script
+        run: |
+          python ip42.py
 
-    - name: Run Python script
-      run: |
-        python ip42.py  # 替换为你的 Python 脚本文件名
+      - name: Configure Git
+        run: |
+          git config --global user.name "yuanxiawan"
+          git config --global user.email "yuanxiawan@gmail.com"
 
-    - name: Configure Git
-      run: |
-        git config --global user.name "yuanxiawan"
-        git config --global user.email "yuanxiawan@gmail.com"
-
-    - name: Commit and push generated files
-      run: |
-        git add output.csv
-        git commit -m "Auto-update output file" || echo "No changes to commit"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push generated files
+        run: |
+          git add cfip.csv cfip4.txt output.csv
+          git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
