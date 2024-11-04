@@ -30,9 +30,14 @@ def fetch_data_with_playwright(url):
         print(f"Playwright 抓取错误: {e}")
         return None
 
-def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
+def fetch_and_write_csv(url, filename, use_playwright):
     """根据选择的方式抓取数据并写入CSV文件"""
-    content = fetch_data_with_playwright(url) if use_playwright else fetch_data_with_requests(url)
+    content = None
+    if use_playwright:
+        content = fetch_data_with_playwright(url)
+    else:
+        content = fetch_data_with_requests(url)
+
     if not content:
         print(f"抓取 {url} 失败！")
         return
@@ -40,12 +45,14 @@ def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
     try:
         soup = BeautifulSoup(content, 'html.parser')
         
-        # 使用table_identifier来定位特定的表格
-        target_div = soup.find('div', class_=table_identifier)
-        if target_div is None:
-            print("未找到包含目标表格的DIV！")
+        # 获取所有的 layui-card
+        cards = soup.find_all('div', class_='layui-card')
+        if len(cards) < 2:
+            print("未找到包含目标表格的第二个layui-card！")
             return
 
+        # 获取第二个 layui-card
+        target_div = cards[1]  # 选择第二个卡片
         table = target_div.find('table')  # 在目标div内寻找表格
 
         if table is None:
@@ -94,9 +101,8 @@ encoded_urls = [
 # 解码 URL
 decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 
-# 手动指定每个URL是否使用Playwright和目标表格的div class或id
+# 手动指定每个URL是否使用Playwright
 use_playwright = [True]
-table_identifiers = ['layui-table']
 
 # 执行数据抓取和处理
 print("开始执行...")
@@ -104,8 +110,8 @@ print("开始执行...")
 csv_filename = 'cfip.csv'
 txt_filename = 'cfip4.txt'
 
-for url, use_pw, table_identifier in zip(decoded_urls, use_playwright, table_identifiers):
-    fetch_and_write_csv(url, csv_filename, use_pw, table_identifier)
+for url, use_pw in zip(decoded_urls, use_playwright):
+    fetch_and_write_csv(url, csv_filename, use_pw)
 
 process_csv_to_txt(csv_filename, txt_filename)
 print("任务已完成。")
