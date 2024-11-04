@@ -30,7 +30,7 @@ def fetch_data_with_playwright(url):
         print(f"Playwright 抓取错误: {e}")
         return None
 
-def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id, columns_per_row):
+def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
     """根据选择的方式抓取数据并写入CSV文件"""
     content = None
     if use_playwright:
@@ -59,7 +59,7 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id, colu
             print("未找到数据表！")
             return
 
-        # 找到 <tbody>，然后直接获取 <td> 元素
+        # 找到 <tbody>，然后直接获取 <tr> 元素
         tbody = table.find('tbody')
         if tbody is None:
             print("未找到 <tbody> 元素！")
@@ -68,18 +68,13 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id, colu
         # 打开CSV文件写入数据
         with open(filename, 'w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            row_data = []
-            
-            # 遍历每个 <td>，按每行数据的列数划分
-            for index, td in enumerate(tbody.find_all('td')):
-                row_data.append(td.text.strip())
-                if (index + 1) % columns_per_row == 0:
-                    writer.writerow(row_data)
-                    row_data = []
 
-            # 检查是否有剩余未写入的列
-            if row_data:
-                writer.writerow(row_data)
+            # 遍历每个 <tr>，然后获取每行中的 <td>
+            for tr in tbody.find_all('tr'):
+                cols = tr.find_all('td')
+                if cols:  # 仅处理包含 <td> 的行
+                    row_data = [col.text.strip() for col in cols]
+                    writer.writerow(row_data)
 
         print(f"CSV文件已成功保存为：{filename}")
     except IOError as e:
@@ -115,7 +110,6 @@ decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 use_playwright = [True]  # 如果需要使用 Playwright 抓取
 div_class = 'layui-card-body'  # 目标 div 的 class
 table_id = 'data-table'  # 目标表格的id
-columns_per_row = 6  # 每行的数据列数
 
 # 执行数据抓取和处理
 print("开始执行...")
@@ -124,7 +118,7 @@ csv_filename = 'cfip.csv'
 txt_filename = 'cfip4.txt'
 
 for url, use_pw in zip(decoded_urls, use_playwright):
-    fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id, columns_per_row)
+    fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id)
 
 process_csv_to_txt(csv_filename, txt_filename)
 print("任务已完成。")
