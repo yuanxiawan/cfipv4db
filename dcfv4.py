@@ -1,73 +1,47 @@
 import requests
 
 def fetch_ip_data(url):
-    """从指定URL获取IP数据"""
+    """获取IP数据"""
     try:
         response = requests.get(url)
-        response.raise_for_status()  # 检查请求是否成功
+        response.raise_for_status()
         return response.text.strip().splitlines()
     except requests.RequestException as e:
         print(f"请求错误: {e}")
         return []
 
-def get_ip_location(ip):
+def fetch_ip_location(ip):
     """查询IP的地理位置"""
+    location_api_url = f"http://ip-api.com/json/{ip}"
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip}")
-        if response.status_code == 200:
-            data = response.json()
-            if data['status'] == 'success':
-                return f"{ip}#{data['regionName']}"  # 只提取地区名称
-            else:
-                print(f"无法获取 {ip} 的地理位置: {data['message']}")
-                return None
-        else:
-            print(f"IP查询请求失败: {response.status_code}")
-            return None
+        response = requests.get(location_api_url)
+        response.raise_for_status()
+        data = response.json()
+        return data.get('region', '未知区域')
     except requests.RequestException as e:
-        print(f"请求错误: {e}")
-        return None
+        print(f"获取位置错误: {e}")
+        return '未知区域'
 
-def save_to_file(data, filename):
-    """将结果保存到文件"""
-    try:
-        with open(filename, 'w', encoding='utf-8') as file:
-            for item in data:
-                file.write(f"{item}\n")
-        print(f"内容已成功保存到 {filename}")
-    except IOError as e:
-        print(f"文件操作错误: {e}")
+def generate_output_file(ip_data, output_filename):
+    """生成输出文件"""
+    seen = set()
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        for ip_entry in ip_data:
+            ip = ip_entry.split('#')[0]  # 提取IP部分
+            location = fetch_ip_location(ip)  # 获取地理位置
 
-def main():
-    url = "https://addressesapi.090227.xyz/ip.164746.xyz"
-    ip_lines = fetch_ip_data(url)
+            # 处理重复项
+            output_line = f"{ip}#{location}"
+            count = 1
+            while output_line in seen:
+                count += 1
+                output_line = f"{ip}#{location}{count}"
+            seen.add(output_line)
 
-    if not ip_lines:
-        return
+            f.write(output_line + '\n')
+    print(f"输出已保存到 {output_filename}")
 
-    results = []
-    sequence_counter = {}
-
-    for line in ip_lines:
-        if line:
-            ip, _ = line.split('#')
-            location = get_ip_location(ip)
-            if location:
-                # 检查是否已存在相同的地区，添加序列保证不重名
-                region = location.split('#')[1]
-                if region in sequence_counter:
-                    sequence_counter[region] += 1
-                else:
-                    sequence_counter[region] = 1
-
-                # 生成不重复的名称
-                unique_name = f"{ip}#{region}"
-                if sequence_counter[region] > 1:
-                    unique_name += str(sequence_counter[region])
-
-                results.append(unique_name)
-
-    save_to_file(results, "cf.txt")
-
-if __name__ == "__main__":
-    main()
+# 主程序
+url = "https://addressesapi.090227.xyz/ip.164746.xyz"
+ip_data = fetch_ip_data(url)
+generate_output_file(ip_data, "cf.txt")
