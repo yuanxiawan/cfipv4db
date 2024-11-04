@@ -32,12 +32,7 @@ def fetch_data_with_playwright(url):
 
 def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
     """根据选择的方式抓取数据并写入CSV文件"""
-    content = None
-    if use_playwright:
-        content = fetch_data_with_playwright(url)
-    else:
-        content = fetch_data_with_requests(url)
-
+    content = fetch_data_with_playwright(url) if use_playwright else fetch_data_with_requests(url)
     if not content:
         print(f"抓取 {url} 失败！")
         return
@@ -46,7 +41,7 @@ def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
         soup = BeautifulSoup(content, 'html.parser')
         
         # 使用table_identifier来定位特定的表格
-        target_div = soup.find('div', class_=layui-card)
+        target_div = soup.find('div', class_=table_identifier)
         if target_div is None:
             print("未找到包含目标表格的DIV！")
             return
@@ -100,8 +95,8 @@ encoded_urls = [
 decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 
 # 手动指定每个URL是否使用Playwright和目标表格的div class或id
-use_playwright = [True, True]
-table_identifiers = ['layui-row layui-col-space15', 'layui-row layui-col-space15']
+use_playwright = [True]
+table_identifiers = ['layui-card-body']
 
 # 执行数据抓取和处理
 print("开始执行...")
