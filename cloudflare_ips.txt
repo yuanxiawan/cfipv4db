@@ -1,21 +1,15 @@
-CM:
-IP: 104.22.26.197, Line: 移动, Bandwidth: 4 Mbps, Speed: 627 Kbps, Colo: SJC, Delay: 214 ms, Uptime: 1730729107
-IP: 104.19.59.191, Line: 移动, Bandwidth: 31 Mbps, Speed: 3969 Kbps, Colo: HKG, Delay: 71 ms, Uptime: 1730728623
-IP: 104.19.33.45, Line: 移动, Bandwidth: 27 Mbps, Speed: 3579 Kbps, Colo: HKG, Delay: 71 ms, Uptime: 1730728623
-IP: 104.19.58.99, Line: 移动, Bandwidth: 29 Mbps, Speed: 3735 Kbps, Colo: HKG, Delay: 73 ms, Uptime: 1730728623
-IP: 104.19.46.118, Line: 移动, Bandwidth: 32 Mbps, Speed: 4171 Kbps, Colo: HKG, Delay: 72 ms, Uptime: 1730728623
-
-CU:
-IP: 104.26.6.245, Line: 联通, Bandwidth: 35 Mbps, Speed: 4556 Kbps, Colo: HKG, Delay: 188 ms, Uptime: 1730728615
-IP: 162.159.80.35, Line: 联通, Bandwidth: 6 Mbps, Speed: 815 Kbps, Colo: NRT, Delay: 182 ms, Uptime: 1730728615
-IP: 172.64.232.164, Line: 联通, Bandwidth: 24 Mbps, Speed: 3105 Kbps, Colo: NRT, Delay: 177 ms, Uptime: 1730728963
-IP: 172.67.67.71, Line: 联通, Bandwidth: 34 Mbps, Speed: 4410 Kbps, Colo: HKG, Delay: 192 ms, Uptime: 1730728158
-IP: 172.67.69.169, Line: 联通, Bandwidth: 31 Mbps, Speed: 3988 Kbps, Colo: HKG, Delay: 193 ms, Uptime: 1730728504
-
-CT:
-IP: 104.22.24.216, Line: 电信, Bandwidth: 4 Mbps, Speed: 540 Kbps, Colo: HKG, Delay: 184 ms, Uptime: 1730728621
-IP: 172.67.33.190, Line: 电信, Bandwidth: 5 Mbps, Speed: 706 Kbps, Colo: HKG, Delay: 188 ms, Uptime: 1730729107
-IP: 104.17.74.135, Line: 电信, Bandwidth: 4 Mbps, Speed: 621 Kbps, Colo: HKG, Delay: 187 ms, Uptime: 1730729107
-IP: 104.22.16.110, Line: 电信, Bandwidth: 4 Mbps, Speed: 614 Kbps, Colo: HKG, Delay: 191 ms, Uptime: 1730729107
-IP: 162.159.250.20, Line: 电信, Bandwidth: 5 Mbps, Speed: 658 Kbps, Colo: LAX, Delay: 189 ms, Uptime: 1730728621
-
+104.19.59.191#HKG
+104.19.51.144#HKG2
+104.19.56.220#HKG3
+104.19.53.164#HKG4
+104.16.32.94#SEA
+162.159.141.178#HKG5
+162.159.138.126#HKG6
+104.20.25.175#HKG7
+172.67.76.132#HKG8
+104.26.14.222#HKG9
+104.16.32.94#HKG10
+104.22.26.186#HKG11
+172.67.33.190#HKG12
+104.17.78.65#HKG13
+104.22.23.148#HKG14
