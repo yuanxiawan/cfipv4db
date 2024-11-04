@@ -44,13 +44,14 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id, colu
 
     try:
         soup = BeautifulSoup(content, 'html.parser')
-        
-        # 找到指定的 div class="layui-card-body"
-        target_div = soup.find('div', class_=div_class)
-        if target_div is None:
-            print("未找到包含目标表格的DIV！")
+
+        # 找到第三个指定的 div class="layui-card-body"
+        target_divs = soup.find_all('div', class_=div_class)
+        if len(target_divs) < 3:
+            print("未找到第三个包含目标表格的DIV！")
             return
 
+        target_div = target_divs[2]  # 获取第三个div
         # 在目标 div 内部查找表格
         table = target_div.find('table', id=table_id)
         
