@@ -1,52 +1,46 @@
 import requests
 import json
+import base64
 
-def fetch_and_save_cloudflare_ips(api_url, output_file):
+def fetch_data(url):
+    """抓取并返回API数据"""
     try:
-        # 发送请求获取数据
-        response = requests.get(api_url)
-        response.raise_for_status()  # 确保请求成功
-
-        # 解析 JSON 响应
-        data = response.json()
-
-        # 检查状态码和消息
-        if data.get("status") and data.get("code") == 200:
-            ip_info = data["info"]  # 获取包含 CM、CU、CT 的信息
-
-            # 打开文件并写入数据
-            with open(output_file, 'w', encoding='utf-8') as file:
-                for provider, entries in ip_info.items():
-                    file.write(f"{provider}:\n")  # 写入提供商名称，如 CM、CU、CT
-                    for entry in entries:
-                        # 提取并格式化每个字段
-                        ip = entry.get("ip")
-                        line_name = entry.get("line_name")
-                        bandwidth = entry.get("bandwidth")
-                        speed = entry.get("speed")
-                        colo = entry.get("colo")
-                        delay = entry.get("delay")
-                        uptime = entry.get("uptime")
-                        
-                        # 写入格式化内容到文件
-                        file.write(
-                            f"IP: {ip}, Line: {line_name}, Bandwidth: {bandwidth} Mbps, "
-                            f"Speed: {speed} Kbps, Colo: {colo}, Delay: {delay} ms, Uptime: {uptime}\n"
-                        )
-                    file.write("\n")  # 分隔不同提供商的数据
-
-            print(f"数据已成功保存到 {output_file}")
-        else:
-            print("数据请求失败或格式不正确。")
-        
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
     except requests.RequestException as e:
         print(f"请求错误: {e}")
-    except json.JSONDecodeError:
-        print("JSON解析错误。请检查API响应格式。")
+        return None
 
-# 使用API的URL
-api_url = "https://www.wetest.vip/api/cf2dns/get_cloudflare_ip"
-output_file = "cloudflare_ips.txt"
+def process_data(data, output_file):
+    """处理数据并写入到文本文件中"""
+    colo_counter = {}
+    try:
+        with open(output_file, 'w', encoding='utf-8') as file:
+            for provider in ['CM', 'CU', 'CT']:
+                if provider in data['info']:
+                    for entry in data['info'][provider]:
+                        ip = entry['ip']
+                        colo = entry['colo']
 
-# 执行数据抓取并保存到文本文件
-fetch_and_save_cloudflare_ips(api_url, output_file)
+                        # 如果相同colo名称出现多次，为其添加递增编号
+                        if colo in colo_counter:
+                            colo_counter[colo] += 1
+                            formatted_entry = f"{ip}#{colo}{colo_counter[colo]}"
+                        else:
+                            colo_counter[colo] = 1
+                            formatted_entry = f"{ip}#{colo}"
+
+                        file.write(formatted_entry + "\n")
+            print(f"数据已保存到 {output_file}")
+    except IOError as e:
+        print(f"文件写入错误: {e}")
+
+# 隐藏的加密 URL
+encoded_url = "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9hcGkvY2YyZG5zL2dldF9jbG91ZGZsYXJlX2lw"
+decoded_url = base64.b64decode(encoded_url).decode("utf-8")
+
+# 执行数据抓取和处理
+data = fetch_data(decoded_url)
+if data and data.get("status"):
+    process_data(data, "cloudflare_ips.txt")
