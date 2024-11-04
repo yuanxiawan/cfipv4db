@@ -96,7 +96,7 @@ decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 
 # 手动指定每个URL是否使用Playwright和目标表格的div class或id
 use_playwright = [True]
-table_identifiers = ['layui-card-body']
+table_identifiers = ['layui-table']
 
 # 执行数据抓取和处理
 print("开始执行...")
