@@ -30,7 +30,7 @@ def fetch_data_with_playwright(url):
         print(f"Playwright 抓取错误: {e}")
         return None
 
-def fetch_and_write_csv(url, filename, use_playwright):
+def fetch_and_write_csv(url, filename, use_playwright, table_id):
     """根据选择的方式抓取数据并写入CSV文件"""
     content = None
     if use_playwright:
@@ -45,15 +45,8 @@ def fetch_and_write_csv(url, filename, use_playwright):
     try:
         soup = BeautifulSoup(content, 'html.parser')
         
-        # 获取所有的 layui-card
-        cards = soup.find_all('div', class_='layui-card')
-        if len(cards) < 2:
-            print("未找到包含目标表格的第二个layui-card！")
-            return
-
-        # 获取第二个 layui-card
-        target_div = cards[1]  # 选择第二个卡片
-        table = target_div.find('table')  # 在目标div内寻找表格
+        # 直接通过 id 定位目标表格
+        table = soup.find('table', id=table_id)
 
         if table is None:
             print("未找到数据表！")
@@ -101,8 +94,9 @@ encoded_urls = [
 # 解码 URL
 decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 
-# 手动指定每个URL是否使用Playwright
-use_playwright = [True]
+# 手动指定每个URL是否使用Playwright和目标表格的id
+use_playwright = [True]  # 如果需要使用 Playwright 抓取
+table_id = 'data-table'  # 目标表格的id
 
 # 执行数据抓取和处理
 print("开始执行...")
@@ -111,7 +105,7 @@ csv_filename = 'cfip.csv'
 txt_filename = 'cfip4.txt'
 
 for url, use_pw in zip(decoded_urls, use_playwright):
-    fetch_and_write_csv(url, csv_filename, use_pw)
+    fetch_and_write_csv(url, csv_filename, use_pw, table_id)
 
 process_csv_to_txt(csv_filename, txt_filename)
 print("任务已完成。")
