@@ -46,7 +46,7 @@ def fetch_and_write_csv(url, filename, use_playwright, table_identifier):
         soup = BeautifulSoup(content, 'html.parser')
         
         # 使用table_identifier来定位特定的表格
-        target_div = soup.find('div', class_=table_identifier)
+        target_div = soup.find('div', class_=layui-card-body)
         if target_div is None:
             print("未找到包含目标表格的DIV！")
             return
