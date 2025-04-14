@@ -1,4 +1,4 @@
-name: Fetch Cloudflare IPv4
+name: cfipv404
 
 on:
   schedule:
