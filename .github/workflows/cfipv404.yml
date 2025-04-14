@@ -2,7 +2,7 @@ name: Fetch Cloudflare IPv4
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # 每 5 分钟运行一次
+    - cron: '*/5 * * * *'  # 每 5 分钟运行一次
 
 jobs:
   fetch_data:
