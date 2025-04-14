@@ -20,7 +20,7 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Run Python script
-        run: python main.py
+        run: python ipv404.py
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v4
