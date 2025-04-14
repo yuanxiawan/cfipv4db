@@ -1,0 +1,29 @@
+name: Fetch Cloudflare IPv4
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # 每 5 分钟运行一次
+
+jobs:
+  fetch_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run Python script
+        run: python main.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "自动更新 Cloudflare IPv4 地址"
+          file_pattern: cloudflare_ipv402.txt
