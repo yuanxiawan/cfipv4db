@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import base64
 import logging
+import subprocess
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -107,6 +108,27 @@ def process_csv_to_txt(input_filename, txt_filename):
     except IOError as e:
         logging.error(f"文件操作错误: {e}")
 
+def git_add_and_commit(csv_filename, txt_filename):
+    """将生成的文件添加到 Git 并提交"""
+    try:
+        # 添加文件到 Git
+        subprocess.run(["git", "add", csv_filename, txt_filename], check=True)
+        logging.info(f"已将 {csv_filename} 和 {txt_filename} 添加到 Git")
+
+        # 提交更改
+        commit_message = "Auto-update CSV and TXT files"
+        result = subprocess.run(["git", "commit", "-m", commit_message], capture_output=True, text=True)
+        if "nothing to commit" in result.stdout:
+            logging.info("没有更改需要提交")
+        else:
+            logging.info(f"已提交更改：{commit_message}")
+
+        # 推送到远程仓库
+        subprocess.run(["git", "push"], check=True)
+        logging.info("已推送到远程仓库")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Git 操作失败: {e}")
+
 # 编码的 URL 列表
 encoded_urls = [
     "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s"
@@ -123,10 +145,13 @@ table_id = None  # 我们直接在找到的 div 内查找表格，不再依赖 i
 # 执行数据抓取和处理
 logging.info("开始执行...")
 
+# 固定文件名
+csv_filename = 'cfip.csv'
+txt_filename = 'cfip.txt'
+
 for i, (url, use_pw) in enumerate(zip(decoded_urls, use_playwright)):
-    csv_filename = f'cfip_{i}.csv'
-    txt_filename = f'cfip4_{i}.txt'
     fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id)
     process_csv_to_txt(csv_filename, txt_filename)
+    git_add_and_commit(csv_filename, txt_filename)
 
 logging.info("任务已完成。")
