@@ -17,7 +17,8 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: |
+          pip install requests beautifulsoup4 selenium webdriver-manager
 
       - name: Run Python script
         run: python ipv404.py
