@@ -8,21 +8,14 @@ def extract_and_process_data(url, output_file):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        start_marker = soup.find(string='')
-        end_marker = soup.find('main')
+        start_div = soup.find('div', class_='cname-table-wrapper')
+        end_div = soup.find('div', class_='container footer-content')
 
-        if not start_marker or not end_marker:
-            print("未找到起始或结束标记。")
+        if not start_div or not end_div:
+            print("未找到起始或结束 div 标记。")
             return
 
-        table = None
-        current = start_marker.find_next()
-        while current and current != end_marker:
-            if current.name == 'table':
-                table = current
-                break
-            current = current.find_next()
-
+        table = start_div.find('table')  # 假设表格在 start_div 内
         if not table:
             print("未找到表格。")
             return
