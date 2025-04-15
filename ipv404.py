@@ -1,13 +1,25 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
+import tempfile
+import shutil
 
 def fetch_html_with_selenium(url):
+    temp_dir = tempfile.mkdtemp()
     try:
         service = ChromeService(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service)
+        options = Options()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument(f'--user-data-dir={temp_dir}')
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
         time.sleep(5) # 等待页面加载完成 (根据实际情况调整)
         html_content = driver.page_source
@@ -16,6 +28,8 @@ def fetch_html_with_selenium(url):
     except Exception as e:
         print(f"使用 Selenium 获取 HTML 失败: {e}")
         return None
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True) # 清理临时目录
 
 def extract_and_process_data(html_content, output_file):
     soup = BeautifulSoup(html_content, 'html.parser')
