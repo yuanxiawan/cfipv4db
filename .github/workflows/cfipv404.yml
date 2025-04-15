@@ -1,43 +1,37 @@
-name: cfipv404  # Example of a different name
+name: cfipv404
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: '*/5 * * * *'  # 每 5 分钟运行一次
 
 permissions:
-  contents: write
+  contents: write  # 授予写入仓库内容的权限
 
 jobs:
-  run-scraper:
+  fetch_data:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 selenium webdriver-manager
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 selenium webdriver-manager
 
-    - name: Run Python script
-      run: |
-        python ipv404.py
+      - name: Run Python script
+        run: python ipv404.py
 
-    - name: Configure Git
-      run: |
-        git config --global user.name "yuanxiawan"
-        git config --global user.email "yuanxiawan@gmail.com"
+      - name: Configure Git
+        run: |
+          git config --global user.name "yuanxiawan"
+          git config --global user.email "yuanxiawan@gmail.com"
 
-    - name: Commit and push generated files
-      run: |
-        git add cloudflare_ipv402.txt
-        git commit -m "Auto-update Cloudflare IPv4 addresses" || echo "No changes to commit"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "自动更新 Cloudflare IPv4 地址"
+          file_pattern: cloudflare_ipv402.txt
