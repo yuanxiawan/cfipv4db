@@ -102,8 +102,15 @@ def process_csv_to_txt(input_filename, txt_filename):
                             logging.warning(f"行 {index} 没有足够的列数据，跳过该行")
                             continue
                         second_column = row[1]  # 第二列
-                        sixth_column = row[5]    # 第六列
-                        outfile.write(f"{second_column}#{sixth_column}{index}\n")
+                        sixth_column = row[5]  # 第六列
+                        line_content = f"{second_column}#{sixth_column}{index}"
+
+                        # 跳过包含 "优选地址#数据中心1" 的行
+                        if line_content == "优选地址#数据中心1":
+                            logging.info(f"跳过行 {index}: {line_content}")
+                            continue
+
+                        outfile.write(line_content + "\n")
         logging.info(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
         logging.error(f"文件操作错误: {e}")
