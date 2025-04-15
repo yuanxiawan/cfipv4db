@@ -4,11 +4,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
-import tempfile
-import shutil
 
 def fetch_html_with_selenium(url):
-    temp_dir = tempfile.mkdtemp()
     try:
         service = ChromeService(ChromeDriverManager().install())
         options = Options()
@@ -18,7 +15,7 @@ def fetch_html_with_selenium(url):
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-gpu')
         options.add_argument('--remote-debugging-port=9222')
-        options.add_argument(f'--user-data-dir={temp_dir}')
+        options.add_argument('--incognito')  # 使用隐身模式，不使用用户数据目录
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
         time.sleep(5) # 等待页面加载完成 (根据实际情况调整)
@@ -28,8 +25,6 @@ def fetch_html_with_selenium(url):
     except Exception as e:
         print(f"使用 Selenium 获取 HTML 失败: {e}")
         return None
-    finally:
-        shutil.rmtree(temp_dir, ignore_errors=True) # 清理临时目录
 
 def extract_and_process_data(html_content, output_file):
     soup = BeautifulSoup(html_content, 'html.parser')
