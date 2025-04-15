@@ -45,18 +45,18 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
     try:
         soup = BeautifulSoup(content, 'html.parser')
 
-        # 找到第三个指定的 div class="layui-card-body"
-        target_divs = soup.find_all('div', class_=div_class)
-        if len(target_divs) < 3:
-            print("未找到第三个包含目标表格的DIV！")
+        # 找到 class 为 "cname-table-wrapper" 的 div 元素
+        target_div = soup.find('div', class_=div_class)
+
+        if target_div is None:
+            print(f"未找到 class 为 '{div_class}' 的 DIV 元素！")
             return
 
-        target_div = target_divs[2]  # 获取第三个div
         # 在目标 div 内部查找表格
-        table = target_div.find('table', id=table_id)
-        
+        table = target_div.find('table')
+
         if table is None:
-            print("未找到数据表！")
+            print("在目标 DIV 中未找到数据表！")
             return
 
         # 找到 <tbody>，然后直接获取 <tr> 元素
@@ -92,7 +92,7 @@ def process_csv_to_txt(input_filename, txt_filename):
                             print(f"行 {index} 没有足够的列数据，跳过该行")
                             continue
                         second_column = row[1]  # 第二列
-                        sixth_column = row[5]   # 第六列
+                        sixth_column = row[5]    # 第六列
                         outfile.write(f"{second_column}#{sixth_column}{index}\n")
         print(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
@@ -106,10 +106,10 @@ encoded_urls = [
 # 解码 URL
 decoded_urls = [base64.b64decode(url).decode('utf-8') for url in encoded_urls]
 
-# 手动指定每个URL是否使用Playwright和目标表格的id
+# 手动指定每个URL是否使用Playwright和目标表格的class
 use_playwright = [True]  # 如果需要使用 Playwright 抓取
-div_class = 'layui-card-body'  # 目标 div 的 class
-table_id = 'data-table'  # 目标表格的id
+div_class = 'cname-table-wrapper'  # 目标 div 的 class
+table_id = None  # 我们直接在找到的 div 内查找表格，不再依赖 id
 
 # 执行数据抓取和处理
 print("开始执行...")
