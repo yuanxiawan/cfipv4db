@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Python script
       run: |
-        python ip4.py  # 确保这是正确的 Python 脚本文件名
+        python ip4.py  # 确保这是脚本文件名
 
     - name: Configure Git
       run: |
@@ -49,8 +49,8 @@ jobs:
 
     - name: Commit and push generated files
       run: |
-        # 确保忽略缺失的文件，继续执行
-        git add cfip.csv cfip4.txt || echo "Some files are missing, but continuing"
+        # 强制添加修改的文件
+        git add -A
         git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
         git push
       env:
