@@ -43,7 +43,9 @@ jobs:
 
     - name: Pull latest changes
       run: |
-        git pull origin main || echo "No remote changes to pull"
+        git stash
+        git pull --rebase origin main || echo "No remote changes to pull"
+        git stash pop || echo "No local changes to reapply"
 
     - name: Commit and push generated files
       run: |
