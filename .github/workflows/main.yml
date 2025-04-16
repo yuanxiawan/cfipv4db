@@ -43,13 +43,14 @@ jobs:
 
     - name: Pull latest changes
       run: |
-        git stash
-        git pull --rebase origin main || echo "No remote changes to pull"
-        git stash pop || echo "No local changes to reapply"
+        git reset --hard
+        git clean -fd
+        git pull --rebase origin main
 
     - name: Commit and push generated files
       run: |
-        git add cfip.csv cfip4.txt
+        [ -f cfip.csv ] && git add cfip.csv
+        [ -f cfip.txt ] && git add cfip.txt
         git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
         git push
       env:
