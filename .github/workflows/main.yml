@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Python script
       run: |
-        python ip4.py  # Ensure this is your correct Python script filename
+        python ip4.py  # 确保这是正确的 Python 脚本文件名
 
     - name: Configure Git
       run: |
@@ -43,14 +43,14 @@ jobs:
 
     - name: Pull latest changes
       run: |
-        git reset --hard
-        git clean -fd
-        git pull --rebase origin main
+        git stash
+        git pull --rebase origin main || echo "No remote changes to pull"
+        git stash pop || echo "No local changes to reapply"
 
     - name: Commit and push generated files
       run: |
-        [ -f cfip.csv ] && git add cfip.csv
-        [ -f cfip.txt ] && git add cfip.txt
+        # 确保忽略缺失的文件，继续执行
+        git add cfip.csv cfip4.txt || echo "Some files are missing, but continuing"
         git commit -m "Auto-update CSV and TXT files" || echo "No changes to commit"
         git push
       env:
