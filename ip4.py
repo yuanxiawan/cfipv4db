@@ -93,9 +93,10 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
 def process_csv_to_txt(input_filename, txt_filename):
     """处理CSV文件，提取特定列并写入TXT文件"""
     try:
-        with open(input_filename, mode='r', newline='', encoding='utf-8') as infile:
-            reader = csv.reader(infile)
-            with open(txt_filename, mode='w', encoding='utf-8') as outfile:
+        with open(txt_filename, mode='w', encoding='utf-8') as outfile:  # 修改: 'w' 模式，重新写入
+            outfile.write("127.0.0.1:1234#cnat\n") # 在文件开头写入
+            with open(input_filename, mode='r', newline='', encoding='utf-8') as infile:
+                reader = csv.reader(infile)
                 for index, row in enumerate(reader, start=1):
                     if row:
                         if len(row) < 6:
