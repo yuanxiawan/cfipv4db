@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright
 import base64
 import logging
 import subprocess
+import os
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -36,7 +37,7 @@ def fetch_data_with_playwright(url):
         return None
 
 def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
-    """根据选择的方式抓取数据并写入CSV文件"""
+    """根据选择的方式抓取数据并写入TXT文件"""
     try:
         content = None
         if use_playwright:
@@ -68,14 +69,11 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
             logging.error("未找到 <tbody> 元素！")
             return
 
-        # 提取表头
-        headers = []
-        header_row = table.find('thead')
-        if header_row:
-            headers = [th.text.strip() for th in header_row.find_all('th')]
-
         # 准备写入 TXT 数据的列表
         txt_data = ["127.0.0.1:1234#cnat"]  # 添加到列表开头
+
+        # 用于存储已经出现过的名称的字典
+        name_counts = {}
 
         # 遍历每个 <tr>，然后获取每行中的 <td>
         for tr in tbody.find_all('tr'):
@@ -89,6 +87,13 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
                     line_content = f"{second_column}#{sixth_column}"
                     # 跳过包含 "优选地址#数据中心1" 的行
                     if line_content != "优选地址#数据中心1":
+                        # 检查名称是否已经存在
+                        if sixth_column in name_counts:
+                            name_counts[sixth_column] += 1
+                            line_content = f"{second_column}#{sixth_column}{name_counts[sixth_column]}"  # 直接添加数字
+                        else:
+                            name_counts[sixth_column] = 0 # 初始化计数器
+
                         txt_data.append(line_content)
 
         # 将数据写入 TXT 文件
@@ -97,9 +102,11 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
                 outfile.write(line + "\n")
 
         logging.info(f"TXT文件已成功生成为：{filename}")
+        return filename  # 返回实际文件名
 
     except Exception as e:
         logging.error(f"抓取或写入文件时发生错误: {e}")
+        return None
 
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
@@ -144,7 +151,8 @@ csv_filename = 'cfip.csv'
 txt_filename = 'cfip.txt'
 
 for i, (url, use_pw) in enumerate(zip(decoded_urls, use_playwright)):
-    fetch_and_write_csv(url, txt_filename, use_pw, div_class, table_id)
-    git_add_and_commit(csv_filename, txt_filename)
+    txt_filename = fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id) #获取实际写入的文件名
+    if txt_filename: # 确保文件成功写入
+        git_add_and_commit(csv_filename, txt_filename)
 
 logging.info("任务已完成。")
