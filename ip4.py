@@ -74,46 +74,32 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
         if header_row:
             headers = [th.text.strip() for th in header_row.find_all('th')]
 
-        # 打开CSV文件写入数据
-        with open(filename, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            if headers:
-                writer.writerow(headers)  # 写入表头
-            # 遍历每个 <tr>，然后获取每行中的 <td>
-            for tr in tbody.find_all('tr'):
-                cols = tr.find_all('td')
-                if cols:  # 仅处理包含 <td> 的行
-                    row_data = [col.text.strip() for col in cols]
-                    writer.writerow(row_data)
+        # 准备写入 TXT 数据的列表
+        txt_data = ["127.0.0.1:1234#cnat"]  # 添加到列表开头
 
-        logging.info(f"CSV文件已成功保存为：{filename}")
+        # 遍历每个 <tr>，然后获取每行中的 <td>
+        for tr in tbody.find_all('tr'):
+            cols = tr.find_all('td')
+            if cols:  # 仅处理包含 <td> 的行
+                row_data = [col.text.strip() for col in cols]
+                # TXT 格式化
+                if len(row_data) >= 6:
+                    second_column = row_data[1]  # 第二列
+                    sixth_column = row_data[5]  # 第六列
+                    line_content = f"{second_column}#{sixth_column}"
+                    # 跳过包含 "优选地址#数据中心1" 的行
+                    if line_content != "优选地址#数据中心1":
+                        txt_data.append(line_content)
+
+        # 将数据写入 TXT 文件
+        with open(filename, 'w', encoding='utf-8') as outfile:
+            for line in txt_data:
+                outfile.write(line + "\n")
+
+        logging.info(f"TXT文件已成功生成为：{filename}")
+
     except Exception as e:
-        logging.error(f"抓取或写入CSV文件时发生错误: {e}")
-
-def process_csv_to_txt(input_filename, txt_filename):
-    """处理CSV文件，提取特定列并写入TXT文件"""
-    try:
-        with open(input_filename, mode='r', newline='', encoding='utf-8') as infile:
-            reader = csv.reader(infile)
-            with open(txt_filename, mode='w', encoding='utf-8') as outfile:
-                for index, row in enumerate(reader, start=1):
-                    if row:
-                        if len(row) < 6:
-                            logging.warning(f"行 {index} 没有足够的列数据，跳过该行")
-                            continue
-                        second_column = row[1]  # 第二列
-                        sixth_column = row[5]  # 第六列
-                        line_content = f"{second_column}#{sixth_column}{index}"
-
-                        # 跳过包含 "优选地址#数据中心1" 的行
-                        if line_content == "优选地址#数据中心1":
-                            logging.info(f"跳过行 {index}: {line_content}")
-                            continue
-
-                        outfile.write(line_content + "\n")
-        logging.info(f"TXT文件已成功生成为：{txt_filename}")
-    except IOError as e:
-        logging.error(f"文件操作错误: {e}")
+        logging.error(f"抓取或写入文件时发生错误: {e}")
 
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
@@ -136,6 +122,7 @@ def git_add_and_commit(csv_filename, txt_filename):
     except subprocess.CalledProcessError as e:
         logging.error(f"Git 操作失败: {e}")
 
+
 # 编码的 URL 列表
 encoded_urls = [
     "aHR0cHM6Ly93d3cud2V0ZXN0LnZpcC9wYWdlL2Nsb3VkZmxhcmUvYWRkcmVzc192NC5odG1s"
@@ -157,8 +144,7 @@ csv_filename = 'cfip.csv'
 txt_filename = 'cfip.txt'
 
 for i, (url, use_pw) in enumerate(zip(decoded_urls, use_playwright)):
-    fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id)
-    process_csv_to_txt(csv_filename, txt_filename)
+    fetch_and_write_csv(url, txt_filename, use_pw, div_class, table_id)
     git_add_and_commit(csv_filename, txt_filename)
 
 logging.info("任务已完成。")
