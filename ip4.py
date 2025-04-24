@@ -93,8 +93,15 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
 def process_csv_to_txt(input_filename, txt_filename):
     """处理CSV文件，提取特定列并写入TXT文件"""
     try:
-        with open(txt_filename, mode='w', encoding='utf-8') as outfile:  # 修改: 'w' 模式，重新写入
-            outfile.write("127.0.0.1:1234#cnat\n") # 在文件开头写入
+        # 读取现有内容
+        try:
+            with open(txt_filename, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+        except FileNotFoundError:
+            existing_content = ""
+
+        with open(txt_filename, 'w', encoding='utf-8') as outfile:
+            outfile.write("127.0.0.1:1234#cnat\n" + existing_content)  # 在开头写入
             with open(input_filename, mode='r', newline='', encoding='utf-8') as infile:
                 reader = csv.reader(infile)
                 for index, row in enumerate(reader, start=1):
@@ -115,7 +122,7 @@ def process_csv_to_txt(input_filename, txt_filename):
         logging.info(f"TXT文件已成功生成为：{txt_filename}")
     except IOError as e:
         logging.error(f"文件操作错误: {e}")
-
+        
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
     try:
