@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright
 import base64
 import logging
 import subprocess
-import os
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -36,8 +35,67 @@ def fetch_data_with_playwright(url):
         logging.error(f"Playwright 抓取错误: {e}")
         return None
 
-def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
-    """根据选择的方式抓取数据并写入TXT文件"""
+def fetch_and_write_csv(url, csv_filename, use_playwright, div_class, table_id):
+    """根据选择的方式抓取数据并写入CSV文件"""
+    try:
+        content = None
+        if use_playwright:
+            content = fetch_data_with_playwright(url)
+        else:
+            content = fetch_data_with_requests(url)
+
+        if not content:
+            logging.error(f"抓取 {url} 失败！")
+            return
+
+        soup = BeautifulSoup(content, 'html.parser')
+
+        # 找到 class 为 "cname-table-wrapper" 的 div 元素
+        target_div = soup.find('div', class_=div_class)
+        if target_div is None:
+            logging.error(f"未找到 class 为 '{div_class}' 的 DIV 元素！")
+            return
+
+        # 在目标 div 内部查找表格
+        table = target_div.find('table')
+        if table is None:
+            logging.error("在目标 DIV 中未找到数据表！")
+            return
+
+        # 找到 <tbody>，然后直接获取 <tr> 元素
+        tbody = table.find('tbody')
+        if tbody is None:
+            logging.error("未找到 <tbody> 元素！")
+            return
+
+        # 提取表头
+        headers = []
+        header_row = table.find('thead')
+        if header_row:
+            headers = [th.text.strip() for th in header_row.find_all('th')]
+
+        # 提取数据行
+        rows = []
+        for tr in tbody.find_all('tr'):
+            cols = tr.find_all('td')
+            if cols:  # 仅处理包含 <td> 的行
+                row = [col.text.strip() for col in cols]
+                rows.append(row)
+
+        # 将数据写入 CSV 文件
+        with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            if headers:
+                writer.writerow(headers)  # 写入表头
+            writer.writerows(rows)  # 写入数据行
+
+        logging.info(f"CSV文件已成功生成为：{csv_filename}")
+
+    except Exception as e:
+        logging.error(f"抓取或写入 CSV 文件时发生错误: {e}")
+
+def fetch_and_write_txt(url, txt_filename, use_playwright, div_class, table_id):
+    """根据选择的方式抓取数据并写入TXT文件，包含自动编号"""
     try:
         content = None
         if use_playwright:
@@ -92,21 +150,20 @@ def fetch_and_write_csv(url, filename, use_playwright, div_class, table_id):
                             name_counts[sixth_column] += 1
                             line_content = f"{second_column}#{sixth_column}{name_counts[sixth_column]}"  # 直接添加数字
                         else:
-                            name_counts[sixth_column] = 0 # 初始化计数器
+                            name_counts[sixth_column] = 0  # 初始化计数器
 
                         txt_data.append(line_content)
 
         # 将数据写入 TXT 文件
-        with open(filename, 'w', encoding='utf-8') as outfile:
+        with open(txt_filename, 'w', encoding='utf-8') as outfile:
             for line in txt_data:
                 outfile.write(line + "\n")
 
-        logging.info(f"TXT文件已成功生成为：{filename}")
-        return filename  # 返回实际文件名
+        logging.info(f"TXT文件已成功生成为：{txt_filename}")
 
     except Exception as e:
-        logging.error(f"抓取或写入文件时发生错误: {e}")
-        return None
+        logging.error(f"抓取或写入 TXT 文件时发生错误: {e}")
+
 
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
@@ -151,8 +208,8 @@ csv_filename = 'cfip.csv'
 txt_filename = 'cfip.txt'
 
 for i, (url, use_pw) in enumerate(zip(decoded_urls, use_playwright)):
-    txt_filename = fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id) #获取实际写入的文件名
-    if txt_filename: # 确保文件成功写入
-        git_add_and_commit(csv_filename, txt_filename)
+    fetch_and_write_csv(url, csv_filename, use_pw, div_class, table_id)
+    fetch_and_write_txt(url, txt_filename, use_pw, div_class, table_id)
+    git_add_and_commit(csv_filename, txt_filename)
 
 logging.info("任务已完成。")
