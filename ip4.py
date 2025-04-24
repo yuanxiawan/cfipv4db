@@ -126,6 +126,9 @@ def process_csv_to_txt(input_filename, txt_filename):
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
     try:
+        # 拉取远程分支以同步更改
+        subprocess.run(["git", "pull", "--rebase"], check=True)
+
         # 添加文件到 Git
         subprocess.run(["git", "add", csv_filename, txt_filename], check=True)
         logging.info(f"已将 {csv_filename} 和 {txt_filename} 添加到 Git")
