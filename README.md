@@ -16,6 +16,7 @@ Main function: When using cFvless, quickly generate 15 preferred nodes at once. 
 
 For convenience, you can directly use the files cfip.txt and cf.txt!
 
-2026年最新更新文件：high_score_ips.txt，纯净的IP，自己的服务器扫描优选的，韩国地区的VPS扫描的，所以IP大部分是那边的。速度比较优质，可以做为最佳IP使用！更新频率计划是15分钟更新一次（前提是扫描到特别优质的IP权重排名靠前的部分才收录）！
+2026年最新更新文件：https://raw.githubusercontent.com/yuanxiawan/cfipv4db/refs/heads/main/high_score_ips.txt
+纯净的IP，自己的服务器扫描优选的，韩国地区的VPS扫描的，所以IP大部分是那边的。速度比较优质，可以做为最佳IP使用！更新频率计划是15分钟更新一次（前提是扫描到特别优质的IP权重排名靠前的部分才收录）！
 
 The latest updated file in 2026 is high_score_ips.txt. It contains clean IPs, selected from our own server scans, specifically VPS in South Korea, so most of the IPs are from there. The speed is quite good, making it a top-tier IP option! The planned update frequency is once every 15 minutes (provided exceptionally high-quality IPs are found)!
