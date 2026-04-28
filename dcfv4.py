@@ -3,7 +3,7 @@ import requests
 def fetch_ip_data(url):
     """获取IP数据"""
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10.0)
         response.raise_for_status()  # 检查请求是否成功
         return response.text.strip().splitlines()  # 按行分割
     except requests.RequestException as e:
@@ -14,7 +14,7 @@ def fetch_ip_location(ip):
     """查询IP的地理位置"""
     location_api_url = f"http://ip-api.com/json/{ip}"
     try:
-        response = requests.get(location_api_url)
+        response = requests.get(location_api_url, timeout=10.0)
         response.raise_for_status()  # 检查请求是否成功
         data = response.json()
         return data.get('region', '未知区域')  # 获取区域，默认为“未知区域”
