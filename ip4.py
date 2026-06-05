@@ -13,7 +13,7 @@ def fetch_data_with_requests(url):
     """使用 requests 抓取静态网页"""
     try:
         logging.info(f"正在使用 requests 抓取：{url}")
-        response = requests.get(url)
+        response = requests.get(url, timeout=10.0)
         response.raise_for_status()
         return response.content
     except requests.RequestException as e:
