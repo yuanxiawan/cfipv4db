@@ -128,7 +128,7 @@ def fetch_and_write_txt(url, txt_filename, use_playwright, div_class, table_id):
             return
 
         # 准备写入 TXT 数据的列表
-        txt_data = ["127.0.0.1:1234#cnat"]  # 添加到列表开头
+        # txt_data = ["127.0.0.1:1234#cnat"]  # 添加到列表开头
 
         # 用于存储已经出现过的名称的字典
         name_counts = {}
