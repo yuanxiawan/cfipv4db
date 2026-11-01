@@ -128,7 +128,7 @@ def fetch_and_write_txt(url, txt_filename, use_playwright, div_class, table_id):
             return
 
         # 准备写入 TXT 数据的列表
-        # txt_data = ["127.0.0.1:1234#cnat"]  # 添加到列表开头
+        txt_data = []
 
         # 用于存储已经出现过的名称的字典
         name_counts = {}
@@ -163,7 +163,6 @@ def fetch_and_write_txt(url, txt_filename, use_playwright, div_class, table_id):
 
     except Exception as e:
         logging.error(f"抓取或写入 TXT 文件时发生错误: {e}")
-
 
 def git_add_and_commit(csv_filename, txt_filename):
     """将生成的文件添加到 Git 并提交"""
