@@ -16,7 +16,7 @@ Main function: When using cFvless, quickly generate 15 preferred nodes at once. 
 
 For convenience, you can directly use the files cfip.txt and cf.txt!
 
-CNchina.txt,这个文件是我用本地代码跑的程序，符合电信宽带，如果有需要可以自己调用。
+CNchina.txt,这个文件是我用本地代码跑的程序，符合电信宽带（自己电脑本地跑的数据，晚上繁忙的时候，会自动跑，看到更新后就可以使用，整体速度以本地172段为优。），如果有需要可以自己调用。
 
 2026年最新更新文件：https://raw.githubusercontent.com/yuanxiawan/cfipv4db/refs/heads/main/high_score_ips.txt
 纯净的IP，自己的服务器扫描优选的，美国地区的VPS扫描的，所以IP大部分是那边的。更新频率计划是15分钟更新一次（前提是扫描到特别优质的IP权重排名靠前的部分才收录）！
